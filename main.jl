@@ -7,11 +7,11 @@ const MAXFLOAT = 100000
 
 
 function color(ray::Ray, world::Hittables)
-    hit_record = hit(world, ray, 0, MAXFLOAT)
+    hit_record = hit(world, ray, 0.001, MAXFLOAT)
     if !isnothing(hit_record)
         # Hit something.
-        N = hit_record.normal
-        return 0.5(N .+ 1)
+        direct = hit_record.normal + random_in_sphere()
+        return 0.5 * color(Ray(hit_record.p, direct), world)
     else
         # Reach the sky.
         unit_direction = normalize(ray.direction)

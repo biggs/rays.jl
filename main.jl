@@ -5,6 +5,7 @@ include("hittable.jl")
 const MAXFLOAT = 100000
 
 
+
 function color(ray::Ray, world::Hittables)
     hit_record = hit(world, ray, 0, MAXFLOAT)
     if !isnothing(hit_record)
@@ -23,12 +24,10 @@ end
 function run()
     nx = 200
     ny = 100
+    ns = 100   # No samples for anti-aliasing.
     print("P3\n$nx $ny\n255\n")
 
-    lower_left = [-2, -1, -1]
-    horizontal = [4, 0, 0]
-    vertical   = [0, 2, 0]
-    origin     = [0, 0, 0]
+    cam = Camera([-2, -1, -1], [4, 0, 0], [0, 2, 0], [0, 0, 0])
 
     small = Sphere([0, 0, -1], 0.5)
     large = Sphere([0, -100.5, -1], 100)
@@ -36,11 +35,14 @@ function run()
 
     for j = ny-1:-1:0
         for i = 0:nx-1
-            u = i / nx
-            v = j / ny
+            rgb = [0, 0, 0]
+            for _ in 1:ns
+                u = (i + rand()) / nx
+                v = (j + rand()) / ny
 
-            r = Ray(origin, lower_left + u*horizontal + v*vertical)
-            rgb = color(r, world)
+                r = get_ray(cam, u, v)
+                rgb += color(r, world) / ns
+            end
 
             irgb = to_ppm.(rgb)
             print("$(irgb[1]) $(irgb[2]) $(irgb[3])\n")

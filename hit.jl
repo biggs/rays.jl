@@ -29,20 +29,21 @@ function hit(sphere::Sphere, ray::Ray, tmin::Real, tmax::Real)::MaybeHitRec
     discrim = b^2 - 4a*c
 
     if discrim > 0
+        t = nothing
         t_minus = (-b - √(discrim)) / 2a
         t_plus = (-b + √(discrim)) / 2a
 
         if t_minus < tmax && t_minus > tmin
             t = t_minus
-            p = point_at_parameter(ray, t)
-            n = (p - sphere.center) / sphere.radius
-            return HitRecord(t, p, n, sphere)
-
         elseif t_plus < tmax && t_plus > tmin
             t = t_plus
+        end
+
+        if !isnothing(t)
             p = point_at_parameter(ray, t)
             n = (p - sphere.center) / sphere.radius
-            return HitRecord(t, p, n, sphere)
+            mat = sphere.material
+            return HitRecord{typeof(mat)}(t, p, n, mat)
         end
     else
         return nothing

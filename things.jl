@@ -20,14 +20,20 @@ struct Lambertian <: Material
     albedo::Vector{Real}
 end
 
+" Metal material."
+struct Metal <: Material
+    albedo::Vector{Real}
+    fuzz::Real
+    Metal(a, f) = f < 1 ? new(a, f) : new(a, 1)   # Fuzz should be < 1.
+end
 
 
-" Record of ray hitting an object."
-struct HitRecord
+" Record of ray hitting an object of type H."
+struct HitRecord{H <: Material}
     t::Real
     p::Vector{Real}
     normal::Vector{Real}
-    object::Hittable
+    material::H
 end
 
 " Maybe a Hit Record."

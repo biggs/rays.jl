@@ -8,12 +8,17 @@ const MAXFLOAT = 100000
 
 
 
-function color(ray::Ray, world::Hittables)
+function color(ray::Ray, world::Hittables, depth)
     hit_record = hit(world, ray, 0.001, MAXFLOAT)
     if !isnothing(hit_record)
         # Hit something -> bounce off recursively.
-        scattered, attenuation = scatter(ray, hit_record)
-        return attenuation .* color(scattered, world)
+        s = scatter(ray, hit_record)
+        if !isnothing(s) && depth < 50
+            scattered, attenuation = s
+            return attenuation .* color(scattered, world, depth + 1)
+        else
+            return [0, 0, 0]
+        end
     else
         # Reach the sky.
         unit_direction = normalize(ray.direction)
@@ -31,9 +36,11 @@ function run()
 
     cam = Camera([-2, -1, -1], [4, 0, 0], [0, 2, 0], [0, 0, 0])
 
-    small = Sphere([0, 0, -1], 0.5, Lambertian([0.8, 0.3, 0.3]))
     large = Sphere([0, -100.5, -1], 100, Lambertian([0.8, 0.8, 0.0]))
-    world = Hittables([small, large])
+    middle = Sphere([0, 0, -1], 0.5, Lambertian([0.8, 0.3, 0.3]))
+    left = Sphere([-1, 0, -1], 0.5, Metal([0.8, 0.8, 0.8], 0.3))
+    right = Sphere([1, 0, -1], 0.5, Metal([0.8, 0.6, 0.2], 1.0))
+    world = Hittables([large, middle, left, right])
 
     for j = ny-1:-1:0
         for i = 0:nx-1
@@ -43,7 +50,7 @@ function run()
                 v = (j + rand()) / ny
 
                 r = get_ray(cam, u, v)
-                rgb += color(r, world) / ns
+                rgb += color(r, world, 0) / ns
             end
 
             irgb = to_ppm.(rgb)

@@ -20,13 +20,17 @@ struct Lambertian <: Material
     albedo::Vector{Real}
 end
 
-" Metal material."
+" Metal material. Has an albedo and a fuzz ∈ [0, 1]."
 struct Metal <: Material
     albedo::Vector{Real}
     fuzz::Real
-    Metal(a, f) = f < 1 ? new(a, f) : new(a, 1)   # Fuzz should be < 1.
+    Metal(a, f) = f < 1 ? new(a, f) : new(a, 1)
 end
 
+" Dielectric material with reflective index idx."
+struct Dielectric <: Material
+    idx::Real
+end
 
 " Record of ray hitting an object of type H."
 struct HitRecord{H <: Material}
@@ -45,12 +49,4 @@ struct Ray
     # Should be 3D but this is not checked.
     origin::Vector{Real}
     direction::Vector{Real}
-end
-
-" Camera from which rays originate."
-struct Camera
-    lower_left_corner::Vector{Real}
-    horizontal::Vector{Real}
-    vertical::Vector{Real}
-    origin::Vector{Real}
 end
